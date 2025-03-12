@@ -10,9 +10,9 @@ const PORT = 3000;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-const prompt = "Explain how generative model(llm) works. answer in one sentence only";
-const result = await model.generateContent(prompt);
-console.log(result.response.text());
+// const prompt = "Explain how generative model(llm) works. answer in one sentence only";
+// const result = await model.generateContent(prompt);
+// console.log(result.response.text());
 
 
 // Google Maps Search
@@ -21,16 +21,18 @@ const data = {
   textQuery: "Badminton Clubs Near Bibwewadi, Pune",
 };
 const headers = {
-    'Content-Type': 'application/json',
-    'X-Goog-Api-Key': process.env.MAPS_API_KEY,
-    'X-Goog-FieldMask': 'places.displayName,places.formattedAddress'
-}
+  "Content-Type": "application/json",
+  "X-Goog-Api-Key": process.env.MAPS_API_KEY,
+  "X-Goog-FieldMask":
+    "places.displayName,places.formattedAddress,places.id,places.location,places.rating,places.photos",
+};
 try {
     const response = await axios.post(url, data, { headers });
 
     response.data.places.forEach(place => {
-        console.log("Name: " + place.displayName.text + "\n" + "Address:" + place.formattedAddress + "\n");
+        console.log("Name: " + place.displayName.text + "\n" + "Address:" + place.formattedAddress + "\n" + "Location: " + place.location.latitude + ", " + place.location.longitude + "\n" + "Rating: " + place.rating + "\n" + "Google Map Link: " + place.photos[0].googleMapsUri + "\n");
     });
+    
 } catch (error) {
     console.log(error.message); 
 }
