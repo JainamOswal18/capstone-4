@@ -26,24 +26,29 @@ const headers = {
   "X-Goog-FieldMask":
     "places.displayName,places.formattedAddress,places.id,places.location,places.rating,places.photos",
 };
-try {
-    const response = await axios.post(url, data, { headers });
+// try {
+//     const response = await axios.post(url, data, { headers });
 
-    response.data.places.forEach(place => {
-        console.log("Name: " + place.displayName.text + "\n" + "Address:" + place.formattedAddress + "\n" + "Location: " + place.location.latitude + ", " + place.location.longitude + "\n" + "Rating: " + place.rating + "\n" + "Google Map Link: " + place.photos[0].googleMapsUri + "\n");
-    });
+//     response.data.places.forEach(place => {
+//         console.log("Name: " + place.displayName.text + "\n" + "Address:" + place.formattedAddress + "\n" + "Location: " + place.location.latitude + ", " + place.location.longitude + "\n" + "Rating: " + place.rating + "\n" + "Google Map Link: " + place.photos[0].googleMapsUri + "\n");
+//     });
     
-} catch (error) {
-    console.log(error.message); 
-}
-
-
+// } catch (error) {
+//     console.log(error.message); 
+// }
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
     res.render("index.ejs");
+});
+
+app.post("/search", (req, res) => {
+    console.log(req.body);
+
+    res.send("Hello World" + req.body.typeOfPlace + req.body.mode);
+
 });
 
 app.listen(PORT, () => {

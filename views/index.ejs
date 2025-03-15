@@ -1,5 +1,59 @@
-<%- include('partials/header.ejs') %> 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+</head>
+<body>
 
-    <h1>Hello World</h1>
+    <div class="container">
+        
+        <h4 class="heading">Plan Your Hangout With Us!</h4>
 
-<%- include('partials/footer.ejs') %> 
+        <div>
+            <form action="/search" method="post">
+                <select name="typeOfPlace" id="">
+                    <option value="">Select Type Of Hangout</option>
+                    <option value="general">General Hangout Locations</option>
+                    <option value="meetup">Meetups</option>
+                </select>
+                
+                <select name="mode" id="">
+                    <option value="">Select Type Of Mode</option>
+                    <option value="online">Online</option>
+                    <option value="offline">In-Person</option>
+                </select>
+
+                <input type="text" >
+
+                <button type="submit">Search</button>
+            </form>
+
+        </div>
+
+    </div>
+
+    <script>
+    const x = document.getElementById("demo");
+
+    function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(showPosition);
+    } else {
+        x.innerHTML = "Geolocation is not supported by this browser.";
+    }
+    }
+
+    function showPosition(position) {
+    x.innerHTML = "Latitude: " + position.coords.latitude +
+    "<br>Longitude: " + position.coords.longitude;
+    }
+    getLocation();
+</script>
+
+</body>
+</html>
+
+
+
