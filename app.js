@@ -6,13 +6,15 @@ import "dotenv/config"
 
 const app = express();
 const PORT = 3000;
+const client_id = process.env.CLIENT_ID;
+const client_secret = process.env.CLIENT_SECRET;
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-// const prompt = "Explain how generative model(llm) works. answer in one sentence only";
-// const result = await model.generateContent(prompt);
-// console.log(result.response.text());
+const prompt = "Explain how generative model(llm) works. answer in one sentence only";
+const result = await model.generateContent(prompt);
+console.log(result.response.text());
 
 
 // Google Maps Search
@@ -42,6 +44,60 @@ app.use(express.static("public"));
 
 app.get("/", (req, res) => {
     res.render("index.ejs");
+});
+
+app.get("/auth", (req, res) => {
+  res.redirect(
+    `https://www.eventbrite.com/oauth/authorize?response_type=code&client_id=${client_id}&redirect_uri=http://localhost:3000/temp`
+  );
+})
+
+app.get("/temp", async (req, res) => {
+
+  // console.log(req.query);  
+  const access_code = req.query.code;
+
+  console.log("Authorization Code: " + access_code);
+  
+  const data = new URLSearchParams({
+    grant_type: 'authorization_code',
+    client_id: client_id,
+    client_secret: client_secret,
+    code: access_code,
+    redirect_uri: "http://localhost:3000/temp",
+  });
+
+  try {
+    const response = await axios.post(
+      "https://www.eventbrite.com/oauth/token",
+      data,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+  
+    console.log("Access Token Received for exchange of authorization" + response.data.access_token);
+    
+    res.redirect("/temp2?token=" + response.data.access_token);
+    
+  } catch (error) {
+     console.error(
+       "Error exchanging code for token: ",
+       error.response?.data || error.message
+     );
+     res.send("Error occurred while fetching the access token.");
+  }
+
+});
+
+app.get("/temp2", (req, res) => {
+
+  const access_token = req.query.token;
+
+  res.send("Hello " + access_token);
+
 });
 
 app.post("/search", (req, res) => {
