@@ -12,9 +12,9 @@ const client_secret = process.env.CLIENT_SECRET;
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
 
-const prompt = "Explain how generative model(llm) works. answer in one sentence only";
-const result = await model.generateContent(prompt);
-console.log(result.response.text());
+// const prompt = "Explain how generative model(llm) works. answer in one sentence only";
+// const result = await model.generateContent(prompt);
+// console.log(result.response.text());
 
 
 // Google Maps Search
@@ -68,7 +68,7 @@ app.get("/temp", async (req, res) => {
   });
 
   try {
-    const response = await axios.post(
+    const response = await axios.post( 
       "https://www.eventbrite.com/oauth/token",
       data,
       {
@@ -78,7 +78,7 @@ app.get("/temp", async (req, res) => {
       }
     );
   
-    console.log("Access Token Received for exchange of authorization" + response.data.access_token);
+    console.log("Access Token Received for exchange of authorization " + response.data.access_token);
     
     res.redirect("/temp2?token=" + response.data.access_token);
     
@@ -92,11 +92,45 @@ app.get("/temp", async (req, res) => {
 
 });
 
-app.get("/temp2", (req, res) => {
+app.get("/temp2", async (req, res) => {
 
   const access_token = req.query.token;
 
-  res.send("Hello " + access_token);
+  try {
+    const response = await axios.get(
+      "https://www.eventbriteapi.com/v3/users/me/",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    const response2 = await axios.get(
+      `https://www.eventbriteapi.com/v3/users/${response.data.id}/organizations/`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    const response3 = await axios.get(
+      `https://www.eventbriteapi.com/v3/organizations/${response2.data.organizations[0].id}/events/`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+    
+    res.send(response3.data);
+
+
+  } catch (error) {
+    res.send(error.message)
+  }
+
 
 });
 
