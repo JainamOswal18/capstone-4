@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    form {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    input[type="submit"] {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    input[type="submit"]:hover {
+      background-color: #45a049;
+    }
+    </style>
+
+
+</head>
+<body>
+    
+    <form action="/create" method="post">
+
+        <label for="name">Event Name</label>
+        <input type="text" name="name" required>
+
+        <label for="description">Event Description</label>
+        <textarea name="description" rows="4" required></textarea>
+
+        <label for="start">Select Start Time & Date</label>
+        <input type="datetime-local" name="start" required>
+        
+        <label for="end">Select End Time & Date</label>
+        <input type="datetime-local" name="end" required>
+
+        <label for="online_event"></label>
+        <select name="online_event" required>
+            <option value="">Select Type Of Event</option>
+            <option value="true">Online</option>
+            <option value="false">Offline</option>
+        </select>
+
+        <input type="submit" value="Submit">
+
+    </form>
+
+
+</body>
+</html>

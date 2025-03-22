@@ -34,7 +34,7 @@ const headers = {
 //     response.data.places.forEach(place => {
 //         console.log("Name: " + place.displayName.text + "\n" + "Address:" + place.formattedAddress + "\n" + "Location: " + place.location.latitude + ", " + place.location.longitude + "\n" + "Rating: " + place.rating + "\n" + "Google Map Link: " + place.photos[0].googleMapsUri + "\n");
 //     });
-    
+
 // } catch (error) {
 //     console.log(error.message); 
 // }
@@ -43,32 +43,32 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-    res.render("index.ejs");
+  res.render("index.ejs");
 });
 
 app.get("/auth", (req, res) => {
   res.redirect(
-    `https://www.eventbrite.com/oauth/authorize?response_type=code&client_id=${client_id}&redirect_uri=http://localhost:3000/temp`
+    `https://www.eventbrite.com/oauth/authorize?response_type=code&client_id=${client_id}&redirect_uri=http://localhost:3000/list`
   );
 })
 
-app.get("/temp", async (req, res) => {
+app.get("/list", async (req, res) => {
 
   // console.log(req.query);  
-  const access_code = req.query.code;
+  const auth_code = req.query.code;
 
-  console.log("Authorization Code: " + access_code);
-  
+  console.log("Authorization Code: " + auth_code);
+
   const data = new URLSearchParams({
     grant_type: 'authorization_code',
     client_id: client_id,
     client_secret: client_secret,
-    code: access_code,
+    code: auth_code,
     redirect_uri: "http://localhost:3000/temp",
   });
 
   try {
-    const response = await axios.post( 
+    const response = await axios.post(
       "https://www.eventbrite.com/oauth/token",
       data,
       {
@@ -77,18 +77,97 @@ app.get("/temp", async (req, res) => {
         },
       }
     );
-  
+
     console.log("Access Token Received for exchange of authorization " + response.data.access_token);
+    const access_token = response.data.access_token;
+
+    const res1 = await axios.get("https://www.eventbriteapi.com/v3/users/me/", {
+      headers: {
+        Authorization: `Bearer ${access_token}`,
+      },
+    });
+
+    const response2 = await axios.get(
+      `https://www.eventbriteapi.com/v3/users/${res1.data.id}/organizations/`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    const response3 = await axios.get(
+      `https://www.eventbriteapi.com/v3/organizations/${response2.data.organizations[0].id}/events/`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    console.log(response3.data);
+    console.log("Org ID", response2.data.organizations[0].id);
     
-    res.redirect("/temp2?token=" + response.data.access_token);
-    
+    res.send(response3.data);
+
+    // res.redirect("/temp2?token=" + response.data.access_token);
+
   } catch (error) {
-     console.error(
-       "Error exchanging code for token: ",
-       error.response?.data || error.message
-     );
-     res.send("Error occurred while fetching the access token.");
+    console.error(
+      "Error exchanging code for token: ",
+      error.response?.data || error.message
+    );
+    res.send("Error occurred while fetching the access token.");
   }
+
+});
+
+app.get("/create", (req, res) => {
+    res.render("create.ejs");
+});
+
+app.post("/create", async (req, res) => {
+  console.log(req.body);
+  let temp = {
+    event: {
+      name: {
+        html: `<p>${req.body.name}</p>`,
+      },
+      description: {
+        html: `<p>${req.body.description}</p>`,
+      },
+      start: {
+        timezone: `Asia/Kolkata`,
+        utc: req.body.start,
+      },
+      end: {
+        timezone: `Asia/Kolkata`,
+        utc: req.body.end,
+      },
+      currency: "INR",
+      online_event: req.body.online_event
+    },
+  };
+  try {
+    const response = await axios.post(
+      `https://www.eventbriteapi.com/v3/organizations/2688079871791/events/`,
+      temp,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    res.send(response.data)
+  } catch (error) {
+      console.error(
+        "Error exchanging code for token: ",
+        error.response?.data || error.message
+      );
+      res.send("Error occurred while fetching the access token.");
+  }
+
 
 });
 
@@ -123,7 +202,7 @@ app.get("/temp2", async (req, res) => {
         },
       }
     );
-    
+
     res.send(response3.data);
 
 
@@ -135,12 +214,12 @@ app.get("/temp2", async (req, res) => {
 });
 
 app.post("/search", (req, res) => {
-    console.log(req.body);
+  console.log(req.body);
 
-    res.send("Hello World" + req.body.typeOfPlace + req.body.mode);
+  res.send("Hello World" + req.body.typeOfPlace + req.body.mode);
 
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
+  console.log(`Server is running on port ${PORT}.`);
 });
