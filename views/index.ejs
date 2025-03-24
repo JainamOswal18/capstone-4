@@ -7,45 +7,49 @@
 </head>
 <body>
 
-    <form action="/auth" method="get">
-        <button type="submit">Login In With EventBrite</button>
-    </form>
+    <% if(!locals.events) { %>
+        <form action="/auth" method="get">
+            <button type="submit">Login In With EventBrite</button>
+        </form>
+    <% } else { %>
 
-    <form action="/list" method="get">
-        <button type="submit">List Your Events</button>
-    </form>
-
-    <form action="/create" method="get">
-        <button type="submit">Create a Event</button>
-    </form>
-
-
-    <div class="container">
-        
-        <h4 class="heading">Plan Your Hangout With Us and List It On EventBrite!</h4>
-
-        <div>
-            <form action="/search" method="post">
-                <select name="typeOfPlace" id="">
-                    <option value="">Select Type Of Hangout</option>
-                    <option value="general">General Hangout Locations</option>
-                    <option value="meetup">Meetups</option>
-                </select>
-                
-                <select name="mode" id="">
-                    <option value="">Select Type Of Mode</option>
-                    <option value="online">Online</option>
-                    <option value="offline">In-Person</option>
-                </select>
-
-                <input type="text" >
-
-                <button type="submit">Search</button>
-            </form>
-
+        <form action="/list" method="get">
+            <button type="submit">List Your Events</button>
+        </form>
+    
+        <form action="/create" method="get">
+            <button type="submit">Create a Event</button>
+        </form>
+    
+    
+        <div class="container">
+            
+            <h4 class="heading">Plan Your Hangout With Us and List It On EventBrite!</h4>
+    
+            <div>
+                <form action="/search" method="post">
+                    <select name="typeOfPlace" id="">
+                        <option value="">Select Type Of Hangout</option>
+                        <option value="general">General Hangout Locations</option>
+                        <option value="meetup">Meetups</option>
+                    </select>
+                    
+                    <select name="mode" id="">
+                        <option value="">Select Type Of Mode</option>
+                        <option value="online">Online</option>
+                        <option value="offline">In-Person</option>
+                    </select>
+    
+                    <input type="text" >
+    
+                    <button type="submit">Search</button>
+                </form>
+    
+            </div>
+    
         </div>
+    <% } %>
 
-    </div>
 
     <!-- <script>
     const x = document.getElementById("demo");

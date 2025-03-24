@@ -8,8 +8,23 @@
 <body>
     <% if (locals.events) { %>
     <%     events.forEach((event) => { %>
+                <div class="event-item">
+                    <h2><strong>Events Name: </strong><%= event.name.text %></h2>
+                    <p><strong>Description:</strong> <%= event.description.text %></p>
+                    <p><strong>Start:</strong> <%= new Date(event.start.utc).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }) %></p>
+                    <p><strong>End:</strong> <%= new Date(event.end.utc).toLocaleString('en-US', { timeZone: 'Asia/Kolkata' }) %></p>
+                    <p><strong>Status:</strong> <%= event.status %></p>
+                    <p><strong>Event URL:</strong> <a href="<%= event.url %>" target="_blank">View Event</a></p>
 
+                    <form action="/delete/<%= event.id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this event?');">
+                        <button type="submit">Delete Event</button>
+                    </form>
+                </div>
     <%     }); %>
+    <% } else { %>
+        <p>No events found.</p>
     <% } %>
+
+    <button onclick="window.location.href='/create'">Create a event</button>
 </body>
 </html>

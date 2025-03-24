@@ -3,6 +3,7 @@ import bodyParser from "body-parser"
 import axios from "axios"
 import { GoogleGenerativeAI } from "@google/generative-ai"
 import "dotenv/config"
+import session from "express-session"
 
 const app = express();
 const PORT = 3000;
@@ -41,6 +42,11 @@ const headers = {
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
+app.use(session({
+  secret: 'JainamIsOP',
+  resave: false,
+  saveUninitialized: true
+}))
 
 app.get("/", (req, res) => {
   res.render("index.ejs");
@@ -80,6 +86,7 @@ app.get("/list", async (req, res) => {
 
     console.log("Access Token Received for exchange of authorization " + response.data.access_token);
     const access_token = response.data.access_token;
+    req.session.access_token = access_token;
 
     const res1 = await axios.get("https://www.eventbriteapi.com/v3/users/me/", {
       headers: {
@@ -96,6 +103,8 @@ app.get("/list", async (req, res) => {
       }
     );
 
+    req.session.org_id = response2.data.organizations[0].id;
+
     const response3 = await axios.get(
       `https://www.eventbriteapi.com/v3/organizations/${response2.data.organizations[0].id}/events/`,
       {
@@ -108,7 +117,7 @@ app.get("/list", async (req, res) => {
     console.log(response3.data);
     console.log("Org ID", response2.data.organizations[0].id);
     
-    res.send(response3.data);
+    res.render("events.ejs", {events: response3.data.events});
 
     // res.redirect("/temp2?token=" + response.data.access_token);
 
@@ -127,6 +136,14 @@ app.get("/create", (req, res) => {
 });
 
 app.post("/create", async (req, res) => {
+
+  const access_token = req.session.access_token;
+  const org_id = req.session.org_id;
+
+  if (!access_token || !org_id) {
+    return res.send("Session expired. Please authenticate again!");
+  }
+
   console.log(req.body);
   let temp = {
     event: {
@@ -138,19 +155,19 @@ app.post("/create", async (req, res) => {
       },
       start: {
         timezone: `Asia/Kolkata`,
-        utc: req.body.start,
+        utc: `${req.body.start}:00Z`,
       },
       end: {
         timezone: `Asia/Kolkata`,
-        utc: req.body.end,
+        utc: `${req.body.end}:00Z`,
       },
-      currency: "INR",
-      online_event: req.body.online_event
+      currency: "USD",
+      online_event: req.body.online_event === 'true',
     },
   };
   try {
     const response = await axios.post(
-      `https://www.eventbriteapi.com/v3/organizations/2688079871791/events/`,
+      `https://www.eventbriteapi.com/v3/organizations/${org_id}/events/`,
       temp,
       {
         headers: {
@@ -158,8 +175,9 @@ app.post("/create", async (req, res) => {
         },
       }
     );
-
-    res.send(response.data)
+    console.log("Success!");
+    
+    res.redirect("/")
   } catch (error) {
       console.error(
         "Error exchanging code for token: ",
@@ -168,49 +186,34 @@ app.post("/create", async (req, res) => {
       res.send("Error occurred while fetching the access token.");
   }
 
-
 });
 
-app.get("/temp2", async (req, res) => {
+app.post("/delete/:id", async (req, res) => {
+  const access_token = req.session.access_token;
+  const eventId = req.params.id;
 
-  const access_token = req.query.token;
-
-  try {
-    const response = await axios.get(
-      "https://www.eventbriteapi.com/v3/users/me/",
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
-
-    const response2 = await axios.get(
-      `https://www.eventbriteapi.com/v3/users/${response.data.id}/organizations/`,
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
-
-    const response3 = await axios.get(
-      `https://www.eventbriteapi.com/v3/organizations/${response2.data.organizations[0].id}/events/`,
-      {
-        headers: {
-          Authorization: `Bearer ${access_token}`,
-        },
-      }
-    );
-
-    res.send(response3.data);
-
-
-  } catch (error) {
-    res.send(error.message)
+  if (!access_token) {
+    return res.send("Session expired. Please authenticate again!");
   }
 
+  try {
+    const response = await axios.delete(
+      `https://www.eventbriteapi.com/v3/events/${eventId}/`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
 
+    res.redirect("/");
+  } catch (error) {
+    console.error(
+      "Error deleting event: ",
+      error.response?.data || error.message
+    );
+    res.send("Error occurred while deleting the event.");
+  }
 });
 
 app.post("/search", (req, res) => {
